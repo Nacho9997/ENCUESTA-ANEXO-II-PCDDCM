@@ -5,9 +5,6 @@
   <title>Fundación APASCOVI · Encuesta de satisfacción</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- EmailJS para envío automático -->
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
   <style>
     :root{
       --bg:#0f172a;
@@ -80,7 +77,7 @@
     .body{
       padding:18px 22px 20px;
       background:#f8fafc;
-      font-size:1.05rem; /* base un poco mayor */
+      font-size:1.05rem;
     }
 
     .notice{
@@ -152,31 +149,56 @@
       color:var(--muted);
     }
 
-    .q{
+    /* Bloques de pregunta */
+
+    .question-block{
       background:#ffffff;
       border-radius:16px;
       border:1px solid #e2e8f0;
-      padding:14px 12px;
+      padding:14px 12px 18px;
       margin-bottom:12px;
     }
 
-    .q-head{
+    .pictos-row{
       display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:8px;
+      flex-wrap:wrap;
+      gap:18px;
+      margin-bottom:10px;
+      align-items:center;
+      justify-content:flex-start;
     }
 
-    .q-text{
+    .pictos-row img{
+      width:135px;
+      height:135px;
+      border:3px solid #000;
+      border-radius:8px;
+      object-fit:contain;
+      background:#ffffff;
+      display:block;
+    }
+
+    .question-header{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:12px;
+    }
+
+    .question-number{
+      font-weight:700;
+      font-size:1.3rem;
+    }
+
+    .question-text{
       margin:0;
-      font-size:1.25rem; /* texto de pregunta más grande */
+      font-size:1.25rem;
       line-height:1.4;
       flex:1;
     }
 
-    /* Botón ESCUCHAR más grande */
-    .audio-btn{
+    .listen-button{
+      margin-left:auto;
       border:none;
       border-radius:999px;
       background:#e5e7eb;
@@ -190,44 +212,20 @@
       white-space:nowrap;
     }
 
-    .audio-btn:hover{
+    .listen-button span.icon{
+      font-size:1.1rem;
+    }
+
+    .listen-button:hover{
       background:#cbd5f5;
     }
 
-    .audio-btn:focus{
+    .listen-button:focus{
       outline:2px solid #2563eb;
       outline-offset:1px;
     }
 
-    /* FILA DE PICTOGRAMAS ARRIBA – ahora bastante más grandes */
-    .pictos-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:18px;
-      margin-bottom:10px;
-      align-items:center;
-      justify-content:flex-start;
-    }
-
-    .picto-elem{
-      border:3px solid #000;
-      border-radius:8px;
-      padding:6px;
-      background:#ffffff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .picto-elem img{
-      width:135px;
-      height:135px;
-      object-fit:contain;
-      display:block;
-    }
-
-    /* CARITAS NO / A VECES / SÍ – más grandes */
-    .faces3{
+    .answers-row{
       display:flex;
       flex-wrap:wrap;
       gap:40px;
@@ -236,19 +234,16 @@
       justify-content:flex-start;
     }
 
-    .faceopt{
-      display:inline-flex;
+    .answer-option{
+      display:flex;
       flex-direction:column;
       align-items:center;
       cursor:pointer;
       touch-action:manipulation;
+      user-select:none;
     }
 
-    .faceopt input{
-      display:none;
-    }
-
-    .face-circle{
+    .answer-face{
       width:84px;
       height:84px;
       border-radius:999px;
@@ -261,20 +256,32 @@
       transition:.1s transform,.1s box-shadow,.1s border-color,.1s background-color;
     }
 
-    .face-no   { border-color:#f97373; color:#b91c1c; }
-    .face-ave  { border-color:#facc15; color:#92400e; }
-    .face-si   { border-color:#4ade80; color:#166534; }
+    .answer-option[data-value="NO"] .answer-face{
+      border-color:#f97373;
+      color:#b91c1c;
+    }
 
-    .faceopt input:checked + .face-circle{
-      box-shadow:0 0 0 4px rgba(15,23,42,.18);
+    .answer-option[data-value="A VECES"] .answer-face{
+      border-color:#facc15;
+      color:#92400e;
+    }
+
+    .answer-option[data-value="SI"] .answer-face{
+      border-color:#4ade80;
+      color:#166534;
+    }
+
+    /* Selección: círculo rojo exterior */
+    .answer-option.selected .answer-face{
+      box-shadow:0 0 0 6px rgba(220,38,38,0.8); /* rojo alrededor */
       transform:translateY(-2px) scale(1.04);
     }
 
-    .faceopt:hover .face-circle{
+    .answer-option:hover .answer-face{
       transform:translateY(-1px);
     }
 
-    .face-caption{
+    .answer-caption{
       margin-top:6px;
       font-size:1rem;
       font-weight:700;
@@ -325,14 +332,29 @@
       min-height:1.2em;
     }
 
+    @media(max-width:800px){
+      .body{padding:14px 14px 16px;}
+      .pictos-row img{
+        width:110px;
+        height:110px;
+      }
+      .question-text{
+        font-size:1.15rem;
+      }
+      .answers-row{gap:24px;}
+      .answer-face{
+        width:72px;
+        height:72px;
+        font-size:32px;
+      }
+    }
+
     @media print{
       body{background:#ffffff;}
       .shell{max-width:100%;padding:0;margin:0;}
       .card{box-shadow:none;border:none;border-radius:0;}
-      header, footer{display:none;}
-      .body{padding:10px 12px;}
-      .q{page-break-inside:avoid;}
-      .audio-btn{display:none;}
+      footer{display:none;}
+      .listen-button{display:none;}
     }
   </style>
 </head>
@@ -381,24 +403,227 @@
           </div>
         </fieldset>
 
-        <div id="questions"></div>
+        <div class="block-title">
+          ENTORNO FÍSICO: LAS INSTALACIONES DEL CENTRO Y SU ENTORNO
+        </div>
+        <div class="block-desc">
+          Responde pensando en cómo es tu centro en el día a día.
+        </div>
 
-        <fieldset>
-          <legend>Valoración general – comentario libre</legend>
-          <label for="comentarios">¿Quieres añadir alguna sugerencia u opinión?</label>
-          <textarea id="comentarios" name="comentarios"></textarea>
-        </fieldset>
+        <!-- PREGUNTA 1 -->
+        <section class="question-block" data-question="1">
+          <div class="pictos-row">
+            <img src="img/1.a.png" alt="Sala de estar del centro">
+            <img src="img/1.b.png" alt="Comedor del centro">
+            <img src="img/1.c.png" alt="Persona viendo la televisión">
+          </div>
+
+          <div class="question-header">
+            <span class="question-number">1.</span>
+            <p class="question-text">
+              ¿Las zonas comunes y muebles que hay en tu centro son cómodos?
+            </p>
+            <button type="button" class="listen-button" onclick="playQuestion(1)">
+              <span class="icon">🔊</span> Escuchar
+            </button>
+          </div>
+
+          <div class="answers-row">
+            <div class="answer-option" data-value="NO" onclick="selectAnswer(1, 'NO', this)">
+              <div class="answer-face">🙁</div>
+              <div class="answer-caption">NO</div>
+            </div>
+            <div class="answer-option" data-value="A VECES" onclick="selectAnswer(1, 'A VECES', this)">
+              <div class="answer-face">😐</div>
+              <div class="answer-caption">A VECES</div>
+            </div>
+            <div class="answer-option" data-value="SI" onclick="selectAnswer(1, 'SI', this)">
+              <div class="answer-face">🙂</div>
+              <div class="answer-caption">SÍ</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PREGUNTA 2 -->
+        <section class="question-block" data-question="2">
+          <div class="pictos-row">
+            <img src="img/2.a.png" alt="Persona caminando por el centro">
+            <img src="img/2.b.png" alt="Persona tropezando con un obstáculo">
+            <img src="img/2.c.png" alt="Zona del centro con muchos objetos en el suelo">
+          </div>
+
+          <div class="question-header">
+            <span class="question-number">2.</span>
+            <p class="question-text">
+              ¿Te puedes mover por tu centro de forma fácil y sin obstáculos?
+            </p>
+            <button type="button" class="listen-button" onclick="playQuestion(2)">
+              <span class="icon">🔊</span> Escuchar
+            </button>
+          </div>
+
+          <div class="answers-row">
+            <div class="answer-option" data-value="NO" onclick="selectAnswer(2, 'NO', this)">
+              <div class="answer-face">🙁</div>
+              <div class="answer-caption">NO</div>
+            </div>
+            <div class="answer-option" data-value="A VECES" onclick="selectAnswer(2, 'A VECES', this)">
+              <div class="answer-face">😐</div>
+              <div class="answer-caption">A VECES</div>
+            </div>
+            <div class="answer-option" data-value="SI" onclick="selectAnswer(2, 'SI', this)">
+              <div class="answer-face">🙂</div>
+              <div class="answer-caption">SÍ</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PREGUNTA 3 -->
+        <section class="question-block" data-question="3">
+          <div class="pictos-row">
+            <img src="img/3.a.png" alt="Productos de limpieza del centro">
+            <img src="img/3.b.png" alt="Trabajadora de limpieza del centro">
+            <img src="img/3.c.png" alt="Personas realizando tareas del hogar">
+            <img src="img/3.d.png" alt="Persona de mantenimiento y reparaciones">
+          </div>
+
+          <div class="question-header">
+            <span class="question-number">3.</span>
+            <p class="question-text">
+              ¿Te gusta cómo limpian y cuidan el centro?
+            </p>
+            <button type="button" class="listen-button" onclick="playQuestion(3)">
+              <span class="icon">🔊</span> Escuchar
+            </button>
+          </div>
+
+          <div class="answers-row">
+            <div class="answer-option" data-value="NO" onclick="selectAnswer(3, 'NO', this)">
+              <div class="answer-face">🙁</div>
+              <div class="answer-caption">NO</div>
+            </div>
+            <div class="answer-option" data-value="A VECES" onclick="selectAnswer(3, 'A VECES', this)">
+              <div class="answer-face">😐</div>
+              <div class="answer-caption">A VECES</div>
+            </div>
+            <div class="answer-option" data-value="SI" onclick="selectAnswer(3, 'SI', this)">
+              <div class="answer-face">🙂</div>
+              <div class="answer-caption">SÍ</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PREGUNTA 4 -->
+        <section class="question-block" data-question="4">
+          <div class="pictos-row">
+            <img src="img/4.a.png" alt="Puerta con rampa accesible">
+            <img src="img/4.b.png" alt="Persona en silla de ruedas en el transporte">
+          </div>
+
+          <div class="question-header">
+            <span class="question-number">4.</span>
+            <p class="question-text">
+              ¿El transporte para ir al centro y volver a casa es cómodo y adecuado para ti?
+            </p>
+            <button type="button" class="listen-button" onclick="playQuestion(4)">
+              <span class="icon">🔊</span> Escuchar
+            </button>
+          </div>
+
+          <div class="answers-row">
+            <div class="answer-option" data-value="NO" onclick="selectAnswer(4, 'NO', this)">
+              <div class="answer-face">🙁</div>
+              <div class="answer-caption">NO</div>
+            </div>
+            <div class="answer-option" data-value="A VECES" onclick="selectAnswer(4, 'A VECES', this)">
+              <div class="answer-face">😐</div>
+              <div class="answer-caption">A VECES</div>
+            </div>
+            <div class="answer-option" data-value="SI" onclick="selectAnswer(4, 'SI', this)">
+              <div class="answer-face">🙂</div>
+              <div class="answer-caption">SÍ</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PREGUNTA 5 -->
+        <section class="question-block" data-question="5">
+          <div class="pictos-row">
+            <img src="img/5.a.png" alt="Dos manos que piden ayuda">
+            <img src="img/5.b.png" alt="Persona con dolor y malestar">
+            <img src="img/5.c.png" alt="Persona que se cae">
+          </div>
+
+          <div class="question-header">
+            <span class="question-number">5.</span>
+            <p class="question-text">
+              Cuando tienes un problema, ¿los profesionales del centro te atienden rápido?
+            </p>
+            <button type="button" class="listen-button" onclick="playQuestion(5)">
+              <span class="icon">🔊</span> Escuchar
+            </button>
+          </div>
+
+          <div class="answers-row">
+            <div class="answer-option" data-value="NO" onclick="selectAnswer(5, 'NO', this)">
+              <div class="answer-face">🙁</div>
+              <div class="answer-caption">NO</div>
+            </div>
+            <div class="answer-option" data-value="A VECES" onclick="selectAnswer(5, 'A VECES', this)">
+              <div class="answer-face">😐</div>
+              <div class="answer-caption">A VECES</div>
+            </div>
+            <div class="answer-option" data-value="SI" onclick="selectAnswer(5, 'SI', this)">
+              <div class="answer-face">🙂</div>
+              <div class="answer-caption">SÍ</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PREGUNTA 6 -->
+        <section class="question-block" data-question="6">
+          <div class="pictos-row">
+            <img src="img/6.a.png" alt="Persona que pide más ayuda o atención">
+            <img src="img/6.b.png" alt="Profesional tomando el pulso">
+            <img src="img/6.c.png" alt="Persona hablando con un profesional">
+          </div>
+
+          <div class="question-header">
+            <span class="question-number">6.</span>
+            <p class="question-text">
+              ¿La atención y los cuidados que recibes cubren bien tus necesidades?
+            </p>
+            <button type="button" class="listen-button" onclick="playQuestion(6)">
+              <span class="icon">🔊</span> Escuchar
+            </button>
+          </div>
+
+          <div class="answers-row">
+            <div class="answer-option" data-value="NO" onclick="selectAnswer(6, 'NO', this)">
+              <div class="answer-face">🙁</div>
+              <div class="answer-caption">NO</div>
+            </div>
+            <div class="answer-option" data-value="A VECES" onclick="selectAnswer(6, 'A VECES', this)">
+              <div class="answer-face">😐</div>
+              <div class="answer-caption">A VECES</div>
+            </div>
+            <div class="answer-option" data-value="SI" onclick="selectAnswer(6, 'SI', this)">
+              <div class="answer-face">🙂</div>
+              <div class="answer-caption">SÍ</div>
+            </div>
+          </div>
+        </section>
       </form>
     </div>
 
     <footer>
       <div class="status" id="statusText"></div>
       <div>
-        <button class="btn btn-secondary" type="button" onclick="window.print()">
-          🧾 Imprimir / Guardar en PDF
+        <button type="button" class="btn btn-secondary" onclick="window.print()">
+          🧾 Descargar en PDF
         </button>
-        <button class="btn btn-primary" type="button" onclick="submitSurvey()">
-          📤 Enviar encuesta
+        <button type="button" class="btn btn-primary" onclick="downloadCSV()">
+          📊 Analíticas (CSV)
         </button>
       </div>
     </footer>
@@ -406,253 +631,131 @@
 </div>
 
 <script>
-  const EMAILJS_SERVICE_ID  = "service_21hna5e";
-  const EMAILJS_TEMPLATE_ID = "template_hk12dtc";
-  const EMAILJS_PUBLIC_KEY  = "DYhSYQdRHJthVBMRU";
-  const DESTINO = "idiaz@apascovi.org";
+  // Textos de las preguntas para la locución.
+  // Solo leen la pregunta, con buena entonación interrogativa.
+  const questionTexts = {
+    1: "Pregunta 1. ¿Las zonas comunes y muebles que hay en tu centro son cómodos?",
+    2: "Pregunta 2. ¿Te puedes mover por tu centro de forma fácil y sin obstáculos?",
+    3: "Pregunta 3. ¿Te gusta cómo limpian y cuidan el centro?",
+    4: "Pregunta 4. ¿El transporte para ir al centro y volver a casa es cómodo y adecuado para ti?",
+    5: "Pregunta 5. Cuando tienes un problema, ¿los profesionales del centro te atienden rápido?",
+    6: "Pregunta 6. ¿La atención y los cuidados que recibes cubren bien tus necesidades?"
+  };
 
-  document.addEventListener("DOMContentLoaded", () => {
-    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-    renderQuestions();
-  });
+  let audioTimeoutId = null;
 
-  const audioCache = {};
-  let currentAudio = null;
+  function playQuestion(num){
+    const text = questionTexts[num];
+    if (!text) return;
 
-  function playQuestionAudio(qId){
-    const src = "audio/" + qId + ".mp3";
-    if(!audioCache[qId]){
-      audioCache[qId] = new Audio(src);
-    }
-    const audio = audioCache[qId];
-
-    if(currentAudio && currentAudio !== audio){
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    }
-
-    currentAudio = audio;
-    currentAudio.currentTime = 0;
-
-    currentAudio.play().catch(err=>{
-      console.error("Error reproduciendo audio:", err);
-      alert("No se ha podido reproducir el audio de esta pregunta.\n\nAsegúrate de que existe el archivo:\n" + src);
-    });
-  }
-
-  const THREE_SCALE = [
-    { value: "NO",  label: "No",      emoji: "☹️" },
-    { value: "AVE", label: "A veces", emoji: "😐" },
-    { value: "SI",  label: "Sí",      emoji: "🙂" }
-  ];
-
-  const QUESTIONS = [
-    {
-      id: "Q1",
-      block: "ENTORNO FÍSICO: LAS INSTALACIONES DEL CENTRO Y SU ENTORNO",
-      text: "1. ¿Las zonas comunes y muebles que hay en tu centro son cómodos?",
-      pictos: [
-        { src: "./img/salon.png",   alt: "Sala de estar del centro" },
-        { src: "./img/comedor.png", alt: "Comedor del centro" },
-        { src: "./img/tele.png",    alt: "Persona viendo la televisión" }
-      ]
-    }
-  ];
-
-  function renderQuestions(){
-    const container = document.getElementById("questions");
-    let currentBlock = "";
-    QUESTIONS.forEach(q=>{
-      if(q.block !== currentBlock){
-        currentBlock = q.block;
-        const bt = document.createElement("div");
-        bt.className = "block-title";
-        bt.textContent = currentBlock;
-        container.appendChild(bt);
-
-        const bd = document.createElement("div");
-        bd.className = "block-desc";
-        bd.textContent = "Mira los dibujos, lee la pregunta y elige NO, A VECES o SÍ.";
-        container.appendChild(bd);
-      }
-
-      const box = document.createElement("div");
-      box.className = "q";
-
-      if(q.pictos && q.pictos.length){
-        const pictosRow = document.createElement("div");
-        pictosRow.className = "pictos-row";
-
-        q.pictos.forEach(pic=>{
-          const wrap = document.createElement("div");
-          wrap.className = "picto-elem";
-
-          const img = document.createElement("img");
-          img.src = pic.src;
-          img.alt = pic.alt || "";
-
-          wrap.appendChild(img);
-          pictosRow.appendChild(wrap);
-        });
-
-        box.appendChild(pictosRow);
-      }
-
-      const head = document.createElement("div");
-      head.className = "q-head";
-
-      const p = document.createElement("p");
-      p.className = "q-text";
-      p.textContent = q.text;
-      head.appendChild(p);
-
-      const audioBtn = document.createElement("button");
-      audioBtn.type = "button";
-      audioBtn.className = "audio-btn";
-      audioBtn.textContent = "🔊 Escuchar";
-      audioBtn.setAttribute("aria-label","Escuchar la pregunta");
-      audioBtn.addEventListener("click", () => {
-        playQuestionAudio(q.id);
-      });
-      head.appendChild(audioBtn);
-
-      box.appendChild(head);
-
-      const faces = document.createElement("div");
-      faces.className = "faces3";
-
-      THREE_SCALE.forEach(opt=>{
-        const label = document.createElement("label");
-        label.className = "faceopt";
-
-        const input = document.createElement("input");
-        input.type = "radio";
-        input.name = q.id;
-        input.value = opt.value;
-
-        const faceCircle = document.createElement("span");
-        faceCircle.className = "face-circle " +
-          (opt.value === "NO" ? "face-no" : opt.value === "AVE" ? "face-ave" : "face-si");
-        faceCircle.textContent = opt.emoji;
-
-        const cap = document.createElement("span");
-        cap.className = "face-caption";
-        cap.textContent = opt.label.toUpperCase();
-
-        label.appendChild(input);
-        label.appendChild(faceCircle);
-        label.appendChild(cap);
-        faces.appendChild(label);
-      });
-
-      box.appendChild(faces);
-      container.appendChild(box);
-    });
-  }
-
-  function getSurveyData(){
-    const form = document.getElementById("surveyForm");
-    const data = {
-      centro: form.centro.value.trim(),
-      codigo: form.codigo.value.trim(),
-      antY: form.antY.value.trim(),
-      antM: form.antM.value.trim(),
-      fecha: form.fecha.value,
-      comentarios: form.comentarios.value.trim(),
-      answers: []
-    };
-
-    QUESTIONS.forEach((q, index)=>{
-      const sel = form.querySelector('input[name="'+q.id+'"]:checked');
-      let label = "";
-      if(sel){
-        const found = THREE_SCALE.find(s => s.value === sel.value);
-        label = found ? found.label : "";
-      }
-      data.answers.push({
-        n: index+1,
-        id: q.id,
-        text: q.text,
-        value: sel ? sel.value : "",
-        label: label
-      });
-    });
-
-    return data;
-  }
-
-  function validateSurvey(data){
-    return data.answers.filter(a => !a.value);
-  }
-
-  function composePlainText(data){
-    const lines = [];
-    lines.push("Fundación APASCOVI: Tu satisfacción nos importa.");
-    lines.push("ENCUESTA DE SATISFACCIÓN – Centro / servicio");
-    lines.push("");
-    lines.push("Centro: " + (data.centro || "(sin indicar)"));
-    lines.push("Código/Iniciales: " + (data.codigo || "(sin indicar)"));
-    const antig = (data.antY ? data.antY+" años " : "") + (data.antM ? data.antM+" meses" : "");
-    lines.push("Antigüedad en el centro: " + (antig || "(sin indicar)"));
-    lines.push("Fecha: " + (data.fecha || "(sin indicar)"));
-    lines.push("");
-    lines.push("Escala: NO / A VECES / SÍ");
-    lines.push("");
-
-    data.answers.forEach(a=>{
-      lines.push(a.text);
-      lines.push("   Respuesta: " + (a.label || "(sin respuesta)") + " [" + (a.value || "-") + "]");
-      lines.push("");
-    });
-
-    if(data.comentarios){
-      lines.push("Comentario libre:");
-      lines.push(data.comentarios);
-      lines.push("");
-    }
-    return lines.join("\n");
-  }
-
-  function setStatus(msg, isError=false){
-    const el = document.getElementById("statusText");
-    el.textContent = msg || "";
-    el.style.color = isError ? "#fecaca" : "#bbf7d0";
-  }
-
-  function submitSurvey(){
-    const data = getSurveyData();
-    const missing = validateSurvey(data);
-
-    if(missing.length){
-      alert("Falta contestar alguna pregunta. Recuerda marcar NO, A VECES o SÍ.");
-      const first = missing[0];
-      const node = document.querySelector('input[name="'+first.id+'"]');
-      if(node){ node.scrollIntoView({behavior:"smooth", block:"center"}); node.focus(); }
+    if (!("speechSynthesis" in window)) {
+      alert("Tu navegador no puede leer en voz alta.");
       return;
     }
 
-    const textBody = composePlainText(data);
-    setStatus("Enviando encuesta…");
+    const synth = window.speechSynthesis;
 
-    const params = {
-      to_email: DESTINO,
-      centro: data.centro,
-      fecha: data.fecha,
-      cuerpo_encuesta: textBody
-    };
+    // Parar cualquier lectura anterior y cancelar retrasos previos
+    synth.cancel();
+    if (audioTimeoutId) {
+      clearTimeout(audioTimeoutId);
+    }
 
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
-      .then(()=>{
-        setStatus("Encuesta enviada correctamente. Muchas gracias.");
-        document.getElementById("surveyForm").reset();
-      })
-      .catch(err=>{
-        console.error("EmailJS error:", err);
-        setStatus("Error al enviar la encuesta. Revisa la configuración de EmailJS.", true);
+    // Espera de unos 4 segundos antes de empezar a hablar
+    const delayMs = 4000;
+    audioTimeoutId = setTimeout(() => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "es-ES";
+      utterance.rate = 0.8; // más lento
+      synth.speak(utterance);
+    }, delayMs);
+  }
 
-        const detalle = err && (err.text || err.message || JSON.stringify(err));
-        alert("Error al enviar la encuesta.\n\nDetalle que devuelve EmailJS:\n" + detalle);
-      });
+  function selectAnswer(questionNumber, value, element){
+    const block = document.querySelector(
+      `section.question-block[data-question="${questionNumber}"]`
+    );
+    if (!block) return;
+
+    block.querySelectorAll(".answer-option").forEach((opt) => {
+      opt.classList.remove("selected");
+    });
+
+    element.classList.add("selected");
+    block.dataset.answer = value;
+  }
+
+  function getAnswers(){
+    const blocks = Array.from(document.querySelectorAll(".question-block"));
+    const answers = {};
+    blocks.forEach((block) => {
+      const q = block.dataset.question;
+      answers[q] = block.dataset.answer || "";
+    });
+    return answers;
+  }
+
+  function downloadCSV(){
+    const form = document.getElementById("surveyForm");
+
+    const centro = (form.centro?.value || "").trim();
+    const codigo = (form.codigo?.value || "").trim();
+    const antY = (form.antY?.value || "").trim();
+    const antM = (form.antM?.value || "").trim();
+    const fecha = (form.fecha?.value || "").trim();
+
+    const answers = getAnswers();
+    const questions = Object.keys(answers).sort(
+      (a, b) => parseInt(a) - parseInt(b)
+    );
+
+    // Pequeña advertencia si falta alguna respuesta
+    const missing = questions.filter((q) => !answers[q]);
+    if (missing.length > 0) {
+      const seguir = confirm(
+        "Aún hay preguntas sin contestar (" +
+        missing.join(", ") +
+        "). ¿Quieres descargar igualmente el archivo con las respuestas que tienes?"
+      );
+      if (!seguir) return;
+    }
+
+    // Cabecera CSV
+    const headerParts = [
+      "Centro",
+      "Codigo",
+      "Antiguedad_anios",
+      "Antiguedad_meses",
+      "Fecha"
+    ];
+    questions.forEach((q) => headerParts.push("P" + q));
+
+    const header = headerParts.join(";");
+
+    // Fila de datos
+    const rowParts = [
+      centro,
+      codigo,
+      antY,
+      antM,
+      fecha
+    ];
+    questions.forEach((q) => rowParts.push(answers[q] || ""));
+
+    const row = rowParts.join(";");
+
+    const csvContent = header + "\n" + row + "\n";
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;"
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "encuesta_analiticas.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 </script>
 </body>
